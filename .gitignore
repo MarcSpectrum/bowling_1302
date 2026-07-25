@@ -104,3 +104,8 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# --- Custom exception ---
+# Always keep ProjectPlace scene file tracked, regardless of location
+!**/ProjectPlace.unity
+!**/ProjectPlace.unity.meta
