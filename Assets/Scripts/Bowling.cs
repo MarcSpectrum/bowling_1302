@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public class Bowling : MonoBehaviour
 {
     [SerializeField] private float forcePower = 10f;
-    [SerializeField] private float moveSpeed = 0.5f;
+    [SerializeField] private float moveSpeed = 3f;
 
     private Rigidbody rb;
     private bool hasShot;
@@ -17,16 +17,27 @@ public class Bowling : MonoBehaviour
 
     void Update()
     {
-        if (Keyboard.current.spaceKey.wasPressedThisFrame && !hasShot) ShootBall(); moveInput = 0f;
-        if (Keyboard.current.rightArrowKey.isPressed) moveInput = 1f;
-        else if (Keyboard.current.leftArrowKey.isPressed) moveInput = -1f;
+        // Shoot the ball
+        if (Keyboard.current.spaceKey.wasPressedThisFrame && !hasShot)
+            ShootBall();
+
+        // Only allow steering before the ball is launched
+        moveInput = 0f;
+        if (!hasShot)
+        {
+            if (Keyboard.current.rightArrowKey.isPressed)
+                moveInput = 1f;
+            else if (Keyboard.current.leftArrowKey.isPressed)
+                moveInput = -1f;
+        }
     }
 
     void FixedUpdate()
     {
-        if (!hasShot && moveInput != 0f)
+        if (moveInput != 0f)
         {
-            rb.MovePosition(rb.position + Vector3.right * moveInput * moveSpeed * Time.fixedDeltaTime);
+            Vector3 movement = Vector3.right * moveInput * moveSpeed * Time.fixedDeltaTime;
+            rb.MovePosition(rb.position + movement);
         }
     }
 
