@@ -13,6 +13,8 @@ public static class BowlingProjectBuilder
     static void AutoBuild()
     {
         var menuPath=System.IO.Path.GetFullPath(Scenes+"MainMenu.unity");
+        var menuScene=AssetDatabase.LoadAssetAtPath<SceneAsset>(Scenes+"MainMenu.unity");
+        if(menuScene!=null)EditorSceneManager.playModeStartScene=menuScene;
         if (!System.IO.File.Exists(menuPath)||!System.IO.File.ReadAllText(menuPath).Contains("Cinematic Backdrop"))
             EditorApplication.delayCall += Build;
     }
@@ -21,6 +23,7 @@ public static class BowlingProjectBuilder
     {
         font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); BuildMenu(); BuildGame();
         EditorBuildSettings.scenes=new[]{new EditorBuildSettingsScene(Scenes+"MainMenu.unity",true),new EditorBuildSettingsScene(Scenes+"BowlingGame.unity",true)};
+        EditorSceneManager.playModeStartScene=AssetDatabase.LoadAssetAtPath<SceneAsset>(Scenes+"MainMenu.unity");
         AssetDatabase.SaveAssets(); AssetDatabase.Refresh(); Debug.Log("Bowling 1302 scenes rebuilt successfully.");
     }
     public static void BuildWindowsDevelopment()
@@ -63,7 +66,7 @@ public static class BowlingProjectBuilder
     static void BuildGame()
     {
         var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single); RenderSettings.ambientLight=new Color(.12f,.14f,.25f);
-        var cam=AddCamera(new Color(.015f,.02f,.07f)); cam.transform.SetPositionAndRotation(new Vector3(0,7,-10),Quaternion.Euler(20,0,0)); cam.fieldOfView=55; AddLight();
+        var cam=AddCamera(new Color(.015f,.02f,.07f));cam.transform.position=new Vector3(0,20,-11);cam.transform.LookAt(new Vector3(0,0,9));cam.fieldOfView=58;cam.nearClipPlane=.1f;cam.farClipPlane=80;AddLight();
         Cube("Lane",new Vector3(0,0,9),new Vector3(3.6f,.2f,28),new Color(.84f,.53f,.2f));
         Cube("Left Gutter",new Vector3(-2.05f,-.12f,9),new Vector3(.5f,.25f,28),new Color(.04f,.08f,.18f)); Cube("Right Gutter",new Vector3(2.05f,-.12f,9),new Vector3(.5f,.25f,28),new Color(.04f,.08f,.18f));
         Cube("Backstop",new Vector3(0,1.5f,23),new Vector3(5,3,.3f),new Color(.1f,.02f,.2f));
