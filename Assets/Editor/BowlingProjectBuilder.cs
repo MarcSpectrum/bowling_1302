@@ -12,7 +12,8 @@ public static class BowlingProjectBuilder
     [InitializeOnLoadMethod]
     static void AutoBuild()
     {
-        if (!System.IO.File.Exists(System.IO.Path.GetFullPath(Scenes+"MainMenu.unity")))
+        var menuPath=System.IO.Path.GetFullPath(Scenes+"MainMenu.unity");
+        if (!System.IO.File.Exists(menuPath)||!System.IO.File.ReadAllText(menuPath).Contains("Cinematic Backdrop"))
             EditorApplication.delayCall += Build;
     }
     [MenuItem("Bowling 1302/Rebuild Game Scenes")]
@@ -39,24 +40,25 @@ public static class BowlingProjectBuilder
     }
     static void BuildMenu()
     {
-        var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single); AddCamera(new Color(.025f,.015f,.12f)); AddLight();
+        var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single); AddCamera(new Color(.008f,.006f,.004f));
         var canvas=MakeCanvas(); var root=new GameObject("MainMenuController"); var c=root.AddComponent<MainMenuController>();
-        var home=Panel(canvas.transform,"Home",new Color(.03f,.02f,.14f,.94f));
-        Label(home.transform,"Title","BOWLING\n<size=62><color=#42E8FF>1302</color></size>",84,new Vector2(0,190),new Vector2(900,220));
-        Label(home.transform,"Tagline","NEON LANES • TEN FRAMES • ONE PERFECT GAME",20,new Vector2(0,78),new Vector2(800,45));
-        MakeButton(home.transform,"Play",new Vector2(0,5),c.Play); MakeButton(home.transform,"Settings",new Vector2(0,-65),c.ShowSettings);
-        MakeButton(home.transform,"Credits",new Vector2(0,-135),c.ShowCredits); MakeButton(home.transform,"Quit",new Vector2(0,-205),c.Quit);
-        var settings=Panel(canvas.transform,"Settings",new Color(.02f,.035f,.15f,.98f)); settings.SetActive(false);
-        Label(settings.transform,"Heading","SETTINGS",52,new Vector2(0,250),new Vector2(700,80));
-        MakeSlider(settings.transform,"MASTER VOLUME",new Vector2(0,155),.8f,c.SetMaster); MakeSlider(settings.transform,"MUSIC VOLUME",new Vector2(0,100),.65f,c.SetMusic); MakeSlider(settings.transform,"SFX VOLUME",new Vector2(0,45),.85f,c.SetSfx);
-        MakeToggle(settings.transform,"FULLSCREEN",new Vector2(0,-20),true,c.SetFullscreen); MakeDropdown(settings.transform,"QUALITY",new Vector2(0,-85),QualitySettings.names,c.SetQuality);
-        var rs=Screen.resolutions; var opts=new string[rs.Length]; for(int i=0;i<rs.Length;i++)opts[i]=$"{rs[i].width} × {rs[i].height}";
-        MakeDropdown(settings.transform,"RESOLUTION",new Vector2(0,-150),opts,c.SetResolution); MakeButton(settings.transform,"Back",new Vector2(0,-250),c.ShowHome);
-        var credits=Panel(canvas.transform,"Credits",new Color(.04f,.015f,.13f,.98f)); credits.SetActive(false);
-        Label(credits.transform,"Heading","CREDITS",52,new Vector2(0,230),new Vector2(700,80));
-        Label(credits.transform,"Copy","Designed for the Bowling 1302 project\nBuilt with Unity\nAudio-ready arcade framework\n\nThanks to the Unity community and open-source contributors.",24,Vector2.zero,new Vector2(900,300));
-        MakeButton(credits.transform,"Back",new Vector2(0,-250),c.ShowHome); Set(c,"home",home);Set(c,"settings",settings);Set(c,"credits",credits);
-        EditorSceneManager.SaveScene(scene,Scenes+"MainMenu.unity");
+        var backdrop=new GameObject("Cinematic Backdrop",typeof(RectTransform),typeof(RawImage),typeof(AspectRatioFitter));backdrop.transform.SetParent(canvas.transform,false);
+        var br=backdrop.GetComponent<RectTransform>();br.anchorMin=Vector2.zero;br.anchorMax=Vector2.one;br.sizeDelta=Vector2.zero;
+        backdrop.GetComponent<RawImage>().texture=AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Resources/BowlingMenuCover.png");var fitter=backdrop.GetComponent<AspectRatioFitter>();fitter.aspectMode=AspectRatioFitter.AspectMode.EnvelopeParent;fitter.aspectRatio=16f/9f;
+        UiImage(canvas.transform,"Left Shadow",new Color(.008f,.006f,.004f,.88f),new Vector2(-384,0),new Vector2(512,720));UiImage(canvas.transform,"Gold Accent",new Color(.88f,.64f,.2f,1),new Vector2(-636,0),new Vector2(8,720));
+        var home=MenuPanel(canvas.transform,"Home");
+        var eyebrow=Label(home.transform,"Eyebrow","1302 PRESENTS",17,new Vector2(-385,220),new Vector2(390,35));Left(eyebrow,new Color(.78f,.76f,.68f));
+        var title=Label(home.transform,"Title","BOWLING",64,new Vector2(-385,150),new Vector2(390,80));Left(title,new Color(1f,.76f,.27f),FontStyle.Bold);
+        var tagline=Label(home.transform,"Tagline","THE GOLDEN LANE",19,new Vector2(-385,100),new Vector2(390,35));Left(tagline,new Color(.88f,.82f,.7f));
+        var intro=Label(home.transform,"Intro","Ten frames. One perfect game.\nOwn the lane and chase 300.",17,new Vector2(-385,55),new Vector2(390,55));Left(intro,new Color(.76f,.76f,.72f));
+        MakeMenuButton(home.transform,"Play Game",new Vector2(-385,-25),c.Play);MakeMenuButton(home.transform,"Settings",new Vector2(-385,-92),c.ShowSettings);MakeMenuButton(home.transform,"Credits",new Vector2(-385,-159),c.ShowCredits);MakeMenuButton(home.transform,"Quit Game",new Vector2(-385,-226),c.Quit);
+        var controls=Label(home.transform,"Controls","A / D TO MOVE  •  Q / E TO AIM\nHOLD & RELEASE SPACE TO BOWL  •  ESC TO PAUSE",14,new Vector2(-385,-305),new Vector2(390,55));Left(controls,new Color(.7f,.7f,.66f));
+        var settings=MenuPanel(canvas.transform,"Settings");settings.SetActive(false);var sh=Label(settings.transform,"Heading","SETTINGS",48,new Vector2(-385,245),new Vector2(390,70));Left(sh,new Color(1f,.76f,.27f),FontStyle.Bold);
+        MakeSlider(settings.transform,"MASTER VOLUME",new Vector2(-385,145),.8f,c.SetMaster);MakeSlider(settings.transform,"MUSIC VOLUME",new Vector2(-385,85),.65f,c.SetMusic);MakeSlider(settings.transform,"SFX VOLUME",new Vector2(-385,25),.85f,c.SetSfx);MakeToggle(settings.transform,"FULLSCREEN",new Vector2(-385,-40),true,c.SetFullscreen);MakeDropdown(settings.transform,"QUALITY",new Vector2(-385,-105),QualitySettings.names,c.SetQuality);
+        var rs=Screen.resolutions;var opts=new string[rs.Length];for(int i=0;i<rs.Length;i++)opts[i]=$"{rs[i].width} × {rs[i].height}";MakeDropdown(settings.transform,"RESOLUTION",new Vector2(-385,-170),opts,c.SetResolution);MakeMenuButton(settings.transform,"Back",new Vector2(-385,-265),c.ShowHome);
+        var credits=MenuPanel(canvas.transform,"Credits");credits.SetActive(false);var ch=Label(credits.transform,"Heading","CREDITS",48,new Vector2(-385,220),new Vector2(390,70));Left(ch,new Color(1f,.76f,.27f),FontStyle.Bold);
+        var copy=Label(credits.transform,"Copy","BOWLING 1302\n\nDesigned and built with Unity.\nArcade framework and original menu art.\n\nWith thanks to the Unity community\nand open-source contributors.",18,new Vector2(-385,40),new Vector2(390,280));Left(copy,new Color(.8f,.79f,.73f));MakeMenuButton(credits.transform,"Back",new Vector2(-385,-200),c.ShowHome);
+        Set(c,"home",home);Set(c,"settings",settings);Set(c,"credits",credits);EditorSceneManager.SaveScene(scene,Scenes+"MainMenu.unity");
     }
     static void BuildGame()
     {
@@ -90,11 +92,23 @@ public static class BowlingProjectBuilder
     static Material Mat(Color c){var shader=Shader.Find("Universal Render Pipeline/Lit")??Shader.Find("Standard");return new Material(shader){color=c};}
     static Canvas MakeCanvas(){var g=new GameObject("Canvas",typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));var c=g.GetComponent<Canvas>();c.renderMode=RenderMode.ScreenSpaceOverlay;var s=g.GetComponent<CanvasScaler>();s.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;s.referenceResolution=new Vector2(1280,720);new GameObject("EventSystem",typeof(UnityEngine.EventSystems.EventSystem),typeof(UnityEngine.InputSystem.UI.InputSystemUIInputModule));return c;}
     static GameObject Panel(Transform p,string n,Color c){var i=UiImage(p,n,c,Vector2.zero,new Vector2(1280,720));i.rectTransform.anchorMin=Vector2.zero;i.rectTransform.anchorMax=Vector2.one;i.rectTransform.sizeDelta=Vector2.zero;return i.gameObject;}
+    static GameObject MenuPanel(Transform p,string n){var g=new GameObject(n,typeof(RectTransform),typeof(CanvasGroup));g.transform.SetParent(p,false);var r=g.GetComponent<RectTransform>();r.anchorMin=Vector2.zero;r.anchorMax=Vector2.one;r.sizeDelta=Vector2.zero;return g;}
     static Text Label(Transform p,string n,string value,int size,Vector2 pos,Vector2 dim){var g=new GameObject(n,typeof(RectTransform),typeof(Text));g.transform.SetParent(p,false);var t=g.GetComponent<Text>();t.font=font;t.text=value;t.fontSize=size;t.color=Color.white;t.alignment=TextAnchor.MiddleCenter;t.supportRichText=true;t.rectTransform.anchoredPosition=pos;t.rectTransform.sizeDelta=dim;return t;}
+    static void Left(Text text,Color color,FontStyle style=FontStyle.Normal){text.alignment=TextAnchor.MiddleLeft;text.color=color;text.fontStyle=style;}
     static Image UiImage(Transform p,string n,Color c,Vector2 pos,Vector2 size){var g=new GameObject(n,typeof(RectTransform),typeof(Image));g.transform.SetParent(p,false);var i=g.GetComponent<Image>();i.color=c;i.rectTransform.anchoredPosition=pos;i.rectTransform.sizeDelta=size;return i;}
     static void MakeButton(Transform p,string text,Vector2 pos,UnityAction action){var i=UiImage(p,text+" Button",new Color(.12f,.18f,.4f,.95f),pos,new Vector2(300,54));var b=i.gameObject.AddComponent<Button>();UnityEventTools.AddPersistentListener(b.onClick,action);Label(i.transform,"Label",text.ToUpperInvariant(),22,Vector2.zero,new Vector2(290,50));}
-    static void MakeSlider(Transform p,string label,Vector2 pos,float value,UnityAction<float> action){Label(p,label,label,18,pos+new Vector2(-245,0),new Vector2(220,40));var bg=UiImage(p,label+" Slider",new Color(.1f,.12f,.25f),pos,new Vector2(360,24));var fill=UiImage(bg.transform,"Fill",Color.cyan,Vector2.zero,new Vector2(350,18));var s=bg.gameObject.AddComponent<Slider>();s.fillRect=fill.rectTransform;s.value=value;UnityEventTools.AddPersistentListener(s.onValueChanged,action);}
-    static void MakeToggle(Transform p,string label,Vector2 pos,bool value,UnityAction<bool> action){var bg=UiImage(p,label+" Toggle",new Color(.1f,.12f,.25f),pos,new Vector2(360,44));var mark=UiImage(bg.transform,"Checkmark",Color.cyan,new Vector2(-150,0),new Vector2(28,28));var t=bg.gameObject.AddComponent<Toggle>();t.targetGraphic=bg;t.graphic=mark;t.isOn=value;UnityEventTools.AddPersistentListener(t.onValueChanged,action);Label(bg.transform,"Label",label,18,new Vector2(30,0),new Vector2(280,40));}
-    static void MakeDropdown(Transform p,string label,Vector2 pos,string[] options,UnityAction<int> action){Label(p,label,label,18,pos+new Vector2(-245,0),new Vector2(220,40));var bg=UiImage(p,label+" Dropdown",new Color(.1f,.12f,.25f),pos,new Vector2(360,44));var caption=Label(bg.transform,"Caption","SELECT",18,Vector2.zero,new Vector2(340,40));var d=bg.gameObject.AddComponent<Dropdown>();d.captionText=caption;foreach(var o in options)d.options.Add(new Dropdown.OptionData(o));UnityEventTools.AddPersistentListener(d.onValueChanged,action);}
+    static void MakeMenuButton(Transform p,string text,Vector2 pos,UnityAction action){var i=UiImage(p,text+" Button",new Color(.08f,.065f,.045f,.88f),pos,new Vector2(390,54));var b=i.gameObject.AddComponent<Button>();var colors=b.colors;colors.normalColor=Color.white;colors.highlightedColor=new Color(1f,.78f,.34f,1);colors.selectedColor=colors.highlightedColor;colors.pressedColor=new Color(.82f,.58f,.2f,1);colors.fadeDuration=.12f;b.colors=colors;UnityEventTools.AddPersistentListener(b.onClick,action);var t=Label(i.transform,"Label",text.ToUpperInvariant(),21,Vector2.zero,new Vector2(360,50));Left(t,Color.white,FontStyle.Bold);}
+    static void MakeSlider(Transform p,string label,Vector2 pos,float value,UnityAction<float> action){var l=Label(p,label,label,14,pos+new Vector2(0,20),new Vector2(390,24));Left(l,new Color(.82f,.79f,.7f));var bg=UiImage(p,label+" Slider",new Color(.12f,.095f,.06f,.95f),pos+new Vector2(0,-13),new Vector2(390,18));var fill=UiImage(bg.transform,"Fill",new Color(.9f,.65f,.2f),Vector2.zero,new Vector2(382,12));var s=bg.gameObject.AddComponent<Slider>();s.fillRect=fill.rectTransform;s.value=value;UnityEventTools.AddPersistentListener(s.onValueChanged,action);}
+    static void MakeToggle(Transform p,string label,Vector2 pos,bool value,UnityAction<bool> action){var bg=UiImage(p,label+" Toggle",new Color(.08f,.065f,.045f,.88f),pos,new Vector2(390,44));var mark=UiImage(bg.transform,"Checkmark",new Color(.9f,.65f,.2f),new Vector2(-165,0),new Vector2(24,24));var t=bg.gameObject.AddComponent<Toggle>();t.targetGraphic=bg;t.graphic=mark;t.isOn=value;UnityEventTools.AddPersistentListener(t.onValueChanged,action);var l=Label(bg.transform,"Label",label,16,new Vector2(20,0),new Vector2(320,40));Left(l,new Color(.9f,.87f,.78f));}
+    static void MakeDropdown(Transform p,string label,Vector2 pos,string[] options,UnityAction<int> action)
+    {
+        var l=Label(p,label,label,14,pos+new Vector2(0,28),new Vector2(390,22));Left(l,new Color(.82f,.79f,.7f));var bg=UiImage(p,label+" Dropdown",new Color(.08f,.065f,.045f,.96f),pos,new Vector2(390,40));
+        var caption=Label(bg.transform,"Caption",options.Length>0?options[0]:"NOT AVAILABLE",16,Vector2.zero,new Vector2(350,36));Left(caption,new Color(.94f,.9f,.8f));var d=bg.gameObject.AddComponent<Dropdown>();d.captionText=caption;
+        var template=UiImage(bg.transform,"Template",new Color(.045f,.035f,.025f,.99f),new Vector2(0,-125),new Vector2(390,200));var scroll=template.gameObject.AddComponent<ScrollRect>();
+        var viewport=UiImage(template.transform,"Viewport",Color.white,Vector2.zero,new Vector2(382,192));viewport.gameObject.AddComponent<Mask>().showMaskGraphic=false;var content=new GameObject("Content",typeof(RectTransform));content.transform.SetParent(viewport.transform,false);var cr=content.GetComponent<RectTransform>();cr.anchorMin=new Vector2(0,1);cr.anchorMax=Vector2.one;cr.pivot=new Vector2(.5f,1);cr.sizeDelta=new Vector2(0,Mathf.Max(36,options.Length*36));
+        var item=UiImage(content.transform,"Item Background",new Color(.08f,.065f,.045f,1),new Vector2(0,-18),new Vector2(374,34));var toggle=item.gameObject.AddComponent<Toggle>();var itemText=Label(item.transform,"Item Label","OPTION",15,Vector2.zero,new Vector2(340,32));Left(itemText,new Color(.94f,.9f,.8f));
+        scroll.viewport=viewport.rectTransform;scroll.content=cr;scroll.horizontal=false;d.template=template.rectTransform;d.itemText=itemText;template.gameObject.SetActive(false);
+        foreach(var o in options)d.options.Add(new Dropdown.OptionData(o));UnityEventTools.AddPersistentListener(d.onValueChanged,action);
+    }
     static void Set(Object o,string property,Object value){var so=new SerializedObject(o);so.FindProperty(property).objectReferenceValue=value;so.ApplyModifiedPropertiesWithoutUndo();}
 }
