@@ -1,0 +1,6 @@
+{
+  "name": "Bowling1302.Runtime",
+  "rootNamespace": "",
+  "references": ["Unity.InputSystem"],
+  "autoReferenced": true
+}

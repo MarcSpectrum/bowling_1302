@@ -1,0 +1,6 @@
+{
+  "name": "Bowling1302.Tests",
+  "references": ["Bowling1302.Runtime"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "includePlatforms": ["Editor"]
+}
